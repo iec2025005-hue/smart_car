@@ -14,7 +14,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.[pxy][yma]*'))),
     ],
-    install_requires=['setuptools', 'pyserial', 'ultralytics', 'opencv-python'],
+    install_requires=['setuptools', 'pyserial', 'ultralytics', 'opencv-python', 'cv-bridge'],
     zip_safe=True,
     maintainer='user',
     maintainer_email='user@todo.todo',

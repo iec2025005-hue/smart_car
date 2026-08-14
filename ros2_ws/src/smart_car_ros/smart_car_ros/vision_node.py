@@ -1,6 +1,8 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 import cv2
 from ultralytics import YOLO
 
@@ -8,8 +10,11 @@ class VisionNode(Node):
     def __init__(self):
         super().__init__('vision_node')
         
-        # Publish the target's center coordinates
+        # Publish the target's center coordinates and the camera image
         self.target_publisher = self.create_publisher(Point, 'target_point', 10)
+        self.image_publisher = self.create_publisher(Image, 'camera/image_raw', 10)
+        
+        self.bridge = CvBridge()
         
         # Load YOLO model
         self.get_logger().info('Loading YOLO model...')
@@ -48,7 +53,15 @@ class VisionNode(Node):
                 msg.y = float(cy)
                 msg.z = 1.0 # Found
                 
+                # Draw bounding box and center dot for Foxglove video stream
+                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+                cv2.circle(frame, (int(cx), int(cy)), 5, (0, 0, 255), -1)
+                
         self.target_publisher.publish(msg)
+        
+        # Publish the image frame to ROS 2 (so we can view it in Foxglove!)
+        img_msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+        self.image_publisher.publish(img_msg)
 
 def main(args=None):
     rclpy.init(args=args)

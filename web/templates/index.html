@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Car — Swerve Robot Control Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(18, 26, 44, 0.75);
+      --border: rgba(255, 255, 255, 0.1);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.12) 0%, transparent 40%);
+    }
+
+    header {
+      padding: 1.25rem 2rem;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+
+    main {
+      flex: 1;
+      padding: 1.5rem;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 968px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stream-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .stream-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .hud-overlay {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .hud-chip {
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    /* Target Selector Grid */
+    .target-presets {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+      gap: 0.5rem;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.55rem 0.75rem;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn.active {
+      background: var(--primary);
+      border-color: var(--primary-hover);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-nav.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-estop {
+      background: var(--danger);
+      border: 1px solid var(--danger);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.8rem;
+      border-radius: 12px;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
+      transition: all 0.2s ease;
+    }
+
+    .btn-estop:hover {
+      background: #dc2626;
+      transform: scale(1.02);
+    }
+
+    .custom-input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.6rem 0.8rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .stat-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🏎️</div>
+      <div>
+        <h1>Smart Car AI Dashboard</h1>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Swerve Drive • YOLOv8 • Raspberry Pi Ready</div>
+      </div>
+    </div>
+    <div class="badge" id="conn-badge">ONLINE</div>
+  </header>
+
+  <main>
+    <!-- Left Column: Video Feed & Emergency Control -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <div class="card">
+        <div class="card-title">
+          <span>📷 Live Camera & HUD</span>
+          <span style="font-size: 0.8rem; color: var(--accent);" id="vision-mode-tag">YOLO AI</span>
+        </div>
+        <div class="stream-container">
+          <img src="/video_feed" alt="Live Camera Stream">
+          <div class="hud-overlay">
+            <div class="hud-chip" id="hud-cmd">CMD: STOP:0</div>
+            <div class="hud-chip" id="hud-fps">0.0 FPS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency Stop Button -->
+      <button class="btn-estop" onclick="emergencyStop()">🚨 EMERGENCY STOP (LOCK MOTORS)</button>
+    </div>
+
+    <!-- Right Column: Controls & AI Setup -->
+    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+      
+      <!-- Target Selection Card (Expanded COCO Classes) -->
+      <div class="card">
+        <div class="card-title">🎯 AI Target Selection</div>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Select object class for Swerve Drive to lock and follow:</p>
+        
+        <div class="target-presets">
+          <button class="btn btn-target active" data-target="all">🌐 Any/All</button>
+          <button class="btn btn-target" data-target="person">👤 Person</button>
+          <button class="btn btn-target" data-target="chair">🪑 Chair</button>
+          <button class="btn btn-target" data-target="laptop">💻 Laptop</button>
+          <button class="btn btn-target" data-target="cell phone">📱 Phone</button>
+          <button class="btn btn-target" data-target="bottle">🍾 Bottle</button>
+          <button class="btn btn-target" data-target="cup">☕ Cup</button>
+          <button class="btn btn-target" data-target="cat">🐱 Cat</button>
+          <button class="btn btn-target" data-target="dog">🐶 Dog</button>
+          <button class="btn btn-target" data-target="backpack">🎒 Backpack</button>
+          <button class="btn btn-target" data-target="suitcase">📦 Box</button>
+          <button class="btn btn-target" data-target="potted plant">🌿 Plant</button>
+          <button class="btn btn-target" data-target="couch">🛋️ Couch</button>
+          <button class="btn btn-target" data-target="car">🚗 Car</button>
+          <button class="btn btn-target" data-target="sports ball">⚽ Ball</button>
+          <button class="btn btn-target" data-target="book">📖 Book</button>
+          <button class="btn btn-target" data-target="teddy bear">🧸 Teddy</button>
+          <button class="btn btn-target" data-target="clock">⏰ Clock</button>
+        </div>
+
+        <div class="custom-input-group">
+          <input type="text" id="custom-target" placeholder="Custom COCO class (e.g. apple, tv, keyboard)...">
+          <button class="btn btn-primary" onclick="setCustomTarget()">Set</button>
+        </div>
+      </div>
+
+      <!-- Live Tuning & Sliders -->
+      <div class="card">
+        <div class="card-title">🎛️ Live AI & Drive Tuning</div>
+        
+        <!-- Speed Slider -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>⚡ Max Drive Speed:</span>
+            <span id="val-speed">150 PWM</span>
+          </div>
+          <input type="range" id="slider-speed" min="50" max="255" value="150" onchange="updateSpeed(this.value)">
+        </div>
+
+        <!-- Confidence Slider -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>🎯 AI Confidence Threshold:</span>
+            <span id="val-conf">0.25</span>
+          </div>
+          <input type="range" id="slider-conf" min="0.10" max="0.90" step="0.05" value="0.25" onchange="updateConfidence(this.value)">
+        </div>
+      </div>
+
+      <!-- Navigation & Vision Mode Card -->
+      <div class="card">
+        <div class="card-title">🧭 Navigation Mode</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <button class="btn btn-nav btn-danger active" data-nav="idle">🛑 Idle</button>
+          <button class="btn btn-nav" data-nav="follow">🎯 Follow</button>
+          <button class="btn btn-nav" data-nav="avoid">🛡️ Avoid</button>
+          <button class="btn btn-nav" data-nav="patrol">🚓 Patrol</button>
+        </div>
+      </div>
+
+      <!-- Telemetry Status Card -->
+      <div class="card">
+        <div class="card-title">📊 Real-Time Telemetry</div>
+        <div class="telemetry-grid">
+          <div class="stat-box">
+            <div class="stat-label">Active Target</div>
+            <div class="stat-value" id="stat-target">all</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Nav Mode</div>
+            <div class="stat-value" id="stat-nav">idle</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Vision Mode</div>
+            <div class="stat-value" id="stat-vision">yolo</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Motor Output</div>
+            <div class="stat-value" id="stat-cmd">STOP:0</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Poll status every 400ms
+    async function updateStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+
+        document.getElementById('hud-fps').innerText = data.fps.toFixed(1) + ' FPS';
+        document.getElementById('hud-cmd').innerText = 'CMD: ' + data.nav_command;
+
+        document.getElementById('stat-target').innerText = data.target;
+        document.getElementById('stat-nav').innerText = data.nav_mode;
+        document.getElementById('stat-vision').innerText = data.vision_mode;
+        document.getElementById('stat-cmd').innerText = data.nav_command;
+
+        document.getElementById('conn-badge').innerText = 'ONLINE';
+        document.getElementById('conn-badge').style.color = 'var(--accent)';
+
+        // Highlight nav buttons
+        document.querySelectorAll('.btn-nav').forEach(btn => {
+          if (btn.dataset.nav === data.nav_mode) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+      } catch (err) {
+        document.getElementById('conn-badge').innerText = 'OFFLINE';
+        document.getElementById('conn-badge').style.color = 'var(--danger)';
+      }
+    }
+
+    // Set Target API Call
+    async function setTarget(targetName) {
+      await fetch('/api/set_target', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: targetName })
+      });
+      document.querySelectorAll('.btn-target').forEach(btn => {
+        if (btn.dataset.target === targetName) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    }
+
+    function setCustomTarget() {
+      const val = document.getElementById('custom-target').value;
+      if (val) setTarget(val);
+    }
+
+    // Live Sliders
+    async function updateSpeed(val) {
+      document.getElementById('val-speed').innerText = val + ' PWM';
+      await fetch('/api/set_speed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ speed: val })
+      });
+    }
+
+    async function updateConfidence(val) {
+      document.getElementById('val-conf').innerText = val;
+      await fetch('/api/set_confidence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confidence: val })
+      });
+    }
+
+    // Emergency Stop
+    async function emergencyStop() {
+      await fetch('/api/emergency_stop', { method: 'POST' });
+      document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
+      document.querySelector('.btn-nav[data-nav="idle"]').classList.add('active');
+    }
+
+    // Target Presets
+    document.querySelectorAll('.btn-target').forEach(btn => {
+      btn.addEventListener('click', () => setTarget(btn.dataset.target));
+    });
+
+    // Nav Mode Buttons
+    document.querySelectorAll('.btn-nav').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const mode = btn.dataset.nav;
+        await fetch('/api/set_nav_mode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: mode })
+        });
+      });
+    });
+
+    setInterval(updateStatus, 400);
+  </script>
+</body>
+</html>

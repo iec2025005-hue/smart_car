@@ -1,0 +1,25 @@
+# ──────────────────────────────────────────────
+#  Smart Car — Python dependencies
+# ──────────────────────────────────────────────
+# Install on Raspberry Pi 4 (Bookworm):
+#
+#   sudo apt update && sudo apt install -y python3-picamera2
+#   pip install -r requirements.txt
+#
+# Note: picamera2 MUST be installed via apt (not pip) because it
+# depends on libcamera bindings that are not available on PyPI.
+# ──────────────────────────────────────────────
+
+# Computer vision
+opencv-python>=4.8.0                # Standard build for GUI support (preview window)
+numpy>=1.24.0
+
+# YOLO object detection
+ultralytics==8.2.103                 # YOLOv8 (includes torch as a dependency)
+
+# Serial communication (STM32 Blue Pill via UART)
+pyserial>=3.5
+
+# Web Dashboard
+flask>=3.0.0
+
